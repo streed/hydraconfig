@@ -6,6 +6,8 @@ morgan = require 'morgan'
 serveStatic = require 'serve-static'
 bodyParser = require 'body-parser'
 zookeeper = require 'node-zookeeper-client'
+Q = require 'q'
+_ = require 'underscore'
 LOG = log4js.getLogger 'app.js'
 
 app = express()
@@ -28,46 +30,10 @@ app.use bodyParser.urlencoded(
 )
 
 app.get "/", (req, res) ->
+
   res.render 'index',
     page: "New"
     conf: 'All'
-    confs: [
-      {
-        name: 'dev'
-        conf: [
-          {
-            parent: 'dev'
-            name: 'api'
-            value: 'http://api.pro.fetchconf.com'
-          },
-          {
-            parent: 'dev'
-            name: 'mongo'
-            value: 'localhost:2717'
-          }
-        ]
-      },
-      {
-        name: 'prod'
-        conf: [
-          {
-            parent: 'dev'
-            name: 'api'
-            value: 'http://api.pro.fetchconf.com'
-          },
-          {
-            parent: 'dev'
-            name: 'mongo'
-            value: 'localhost:2717'
-          },
-          {
-            parent: 'prod'
-            name: 'email'
-            value: 'http://email.dev.fetchconf.com'
-          }
-        ]
-      }
-    ]
 
 app.get "/new", (req, res) ->
   res.render 'new'
@@ -82,14 +48,73 @@ app.post '/new', (req, res) ->
       LOG.error req.body.configName + " exists"
     else
       LOG.info "Creating '/configs/" + req.body.configName + "'"
-      app.zoo.create "/configs/" + req.body.configName, new Buffer(JSON.stringify({})), (err, path) ->
+      data = JSON.stringify
+        name: req.body.configName
+        conf: []
+      app.zoo.create "/configs/" + req.body.configName, new Buffer(data), (err, path) ->
         if err
           LOG.error err.stack
 
         if path
-          LOG.info "Create new config '/configs/" + req.body.configName + "'"
-    res.render 'new'
+          LOG.info "Created new config '/configs/" + req.body.configName + "'"
+          res.redirect '/view/' + req.body.configName
+        else
+          LOG.error "Could not create the path...for some reason."
+          res.redirect '/new?error=failed'
 
+
+app.get '/view/:config', (req, res) ->
+  res.render 'view',
+    config: req.params.config
+
+app.get '/api/view', (req, res) ->
+  all = []
+  app.zoo.getChildren '/configs', (err, children, stats) ->
+    LOG.info "Getting data from all:" + children
+    Q.allSettled(_.map(children, ((x) ->
+      deferred = Q.defer()
+      app.zoo.getData '/configs/' + x, (err, data, stat) ->
+        if err
+          LOG.error err
+
+        if stat
+          data = JSON.parse data.toString("utf8")
+          deferred.resolve(data)
+
+       return deferred.promise
+    ))).then((results) ->
+      for r in results
+        all.push r.value
+
+      res.send all
+    ).done()
+          
+
+app.get '/api/view/:config', (req, res) ->
+  config = req.params.config
+  LOG.info "Getting /configs/" + config
+
+  app.zoo.getData '/configs/' + config, (err, data, stat) ->
+    if err
+      LOG.error err.stack
+      res.status 404
+
+    if stat
+      data = JSON.parse data.toString('utf8')
+      res.send data
+    else
+      res.status 404
+app.put '/api/view/:config', (req, res) ->
+  config = req.params.config
+
+  app.zoo.setData '/configs/' + config, new Buffer(JSON.stringify(req.body)), (err, stat) ->
+    if err
+      LOG.error err
+
+    if stat
+      res.send 200
+    else
+      res.send 500
 
 server = app.listen 8080, ->
   LOG.info "Listening on: %s:%d", server.address().address, server.address().port

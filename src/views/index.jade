@@ -1,19 +1,17 @@
 extend layout
 block container
-    div(class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main")
-      each conf in confs
-        h2(class="sub-header") 
-          a(href="/conf/#{conf.name}") #{conf.name}
-        div(class="table-responsive")
-          table(class="table table-striped")
-            thead
-              tr
-                th Key
-                th Value
-                th Parent
-            tbody
-              each val, key in conf.conf
-                tr
-                  td #{val.name}
-                  td #{val.value}
-                  td #{val.parent}
+  div(class="collection")
+
+block append scripts
+  include templates
+  script(type='text/javascript').
+    $(function() {
+      console.log(window.ConfigCollection);
+      var coll = window.coll = new window.ConfigCollection();
+      coll.fetch()
+      var collView = window.collView = new window.ConfigCollectionView({el: $(".collection"), collection: coll});
+      collView.render();
+    });
+
+  script(type='text/javascript' src='/js/view.js')
+
