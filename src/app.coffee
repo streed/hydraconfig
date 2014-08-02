@@ -126,6 +126,19 @@ app.put '/api/view/:config', (req, res) ->
     else
       res.status(500).end()
 
+app.get '/api/state', (req, res) ->
+  state = app.zoo.getState()
+  id = app.zoo.getSessionId()
+  pass = app.zoo.getSessionPassword()
+  timeout = app.zoo.getSessionTimeout()
+
+  res.send
+    state: state
+    id: id.toString("hex")
+    pass: pass.toString("hex")
+    timeout: timeout
+
+
 server = app.listen 8080, ->
   LOG.info "Listening on: %s:%d", server.address().address, server.address().port
   LOG.info "Checking for the default zookeeper folder 'configs' exists"
