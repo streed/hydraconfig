@@ -37,11 +37,19 @@ window.ConfigModelView = Backbone.View.extend({
       self.render();
     });
     var config = this.model.id;
-    var valueView = new window.ConfigModelValuesView({values: this.model.get("conf"), conf: config});
+    var valueView = new window.ConfigModelValuesView({values: this.model.get("conf"), config: config});
     var values = valueView.render()
     var data = { "config": config, "values": values};
     var html = this.template(data);
     $(this.el).html(html);
+
+    $("button[data-config='" + this.model.id + "']").click(function(e) {
+      e.preventDefault();
+      self.model.set({conf: _.reject(self.model.get("conf"), function(x) {
+        return x.name == $(e.currentTarget).data("name");
+      })});
+      self.model.save();
+    });
 
     $("#key-value-add").on( 'submit', function(e) {
       $(".error").empty();
@@ -82,12 +90,24 @@ window.ConfigCollectionModelView = Backbone.View.extend({
     this.model.on('change', function() {
       self.render();
     });
+    this.model.on("save", function() {
+      self.render();
+    });
     var valueView = new window.ConfigModelValuesView({values: this.model.get("conf"), config: this.model.id});
     var config = this.model.id;
     var values = valueView.render()
     var data = { "config": config, "values": values};
     var html = this.template(data);
     $(this.el).append(html);
+    $("button[data-config='" + this.model.id + "']").click(function(e) {
+      e.preventDefault();
+      self.model.set({conf: _.reject(self.model.get("conf"), function(x) {
+        console.log(x);
+        return x.name == $(e.currentTarget).data("name");
+      })});
+      console.log(self.model.get("conf"));
+      self.model.save();
+    });
   }
 });
 window.ConfigCollectionView = Backbone.View.extend({
@@ -95,13 +115,14 @@ window.ConfigCollectionView = Backbone.View.extend({
     this.el = options.el;
     this.collection = options.collection;
     this.collection.bind('add', this.render.bind(this));
+    this.collection.bind('change', this.render.bind(this));
   },
   render: function() {
-    this.el.empty();
+    $(this.el).empty();
     this.collection.forEach(this.renderOne.bind(this));
   },
   renderOne: function(c) {
     var view = new window.ConfigCollectionModelView({el: this.el, model: c});
-    this.el.append(view.render());
+    $(this.el).html(view.render());
   }
 });
