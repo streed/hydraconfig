@@ -41,7 +41,7 @@ app.get "/new", (req, res) ->
 
 app.post '/new', (req, res) ->
   if not /^[a-z0-9]+(-[a-z0-9]+)*$/ig.test req.body.configName
-    res.redirect '/new?error=' + req.body.configName + '&message=Config name must start with a number or letter followed by one dash followed by one or more letters or numbers'
+    res.redirect '/new?error=' + req.body.configName + '&message=Config name must follow the following format: ^[a-z0-9]+(-[a-z0-9]+)*$'
   else
     LOG.info "Checking if /configs/" + req.body.configName + " exists"
     app.zoo.exists '/configs' + req.body.configName, (err, stat) ->
@@ -92,7 +92,6 @@ app.get '/api/view', (req, res) ->
 
       res.send all
     ).done()
-          
 
 app.get '/api/view/:config', (req, res) ->
   config = req.params.config
@@ -111,15 +110,21 @@ app.get '/api/view/:config', (req, res) ->
 
 app.put '/api/view/:config', (req, res) ->
   config = req.params.config
+  conf = req.body
+
+  for d in conf
+    if !/[a-z0-9]+(\.[a-z0-9]+)*/i.test d.name
+      res.status(500).end()
+      return
 
   app.zoo.setData '/configs/' + config, new Buffer(JSON.stringify(req.body)), (err, stat) ->
     if err
       LOG.error err
 
     if stat
-      res.send 200
+      res.status(200).end()
     else
-      res.send 500
+      res.status(500).end()
 
 server = app.listen 8080, ->
   LOG.info "Listening on: %s:%d", server.address().address, server.address().port

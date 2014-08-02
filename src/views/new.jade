@@ -1,10 +1,11 @@
 extend layout
 block container
-  if error
-    div(class='alert alert-danger')
-      p
-        strong #{error}
-        |  - #{message}
+  div(class='error')
+    if error
+      div(class='alert alert-danger')
+        p
+          strong #{error}
+          |  - #{message}
   form(method='post' action='/new' role='form' name='newConfig')
     div(class='form-group')
       label(for='confName') Config Name

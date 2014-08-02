@@ -42,6 +42,7 @@ window.ConfigModelView = Backbone.View.extend({
     $(this.el).html(html);
 
     $("#key-value-add").on( 'submit', function(e) {
+      $(".error").empty();
       e.preventDefault();
       var key = $("#key").val();
       var value = $("#value").val();
@@ -54,12 +55,20 @@ window.ConfigModelView = Backbone.View.extend({
 
       hash[key] = value
 
-      var conf = _.map(_.keys(hash), function(k) {
-        return {name: k, value:hash[k]};
-      });
+      if(_.all(_.keys(hash), function(x) { return /^[a-z0-9]+(\.[a-z0-9]+)*$/i.test(x)})) {
+        var conf = _.map(_.keys(hash), function(k) {
+          return {name: k, value:hash[k]};
+        });
 
-      model.set("conf", conf); 
-      model.save();
+        model.set("conf", conf); 
+        model.save()
+      } else {
+        _.each(_.keys(hash), function(x) {
+          if(!/^[a-z0-9]+(\.[a-z0-9]+)*$/i.test(x)) {
+            $(".error").append("<div class='alert alert-danger'><p><strong>" + x + "</strong> - Must follow the following format: /^[a-z0-9]+(\\.[a-z0-9]+)*$/</p></div>");
+          }
+        });
+      }
     });
   }
 });
