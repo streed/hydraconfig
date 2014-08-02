@@ -4,25 +4,24 @@ script(type='text/html' id='config-model-values-value-view')
     td <%= value %>
 
 script(type='text/html' id='config-model-values-view')
-  div(class="table-responsive")
-    table(class="table table-striped")
-      thead
-        tr
-          th Key
-          th Value
-      tbody
-        <%= values %>
+  table(class="table table-striped")
+    col(style='width: 50%')
+    thead
+      tr
+        th Key
+        th Value
+    tbody
+      <%= values %>
 
 script(type='text/html' id='config-model-view')
-  div
-    h2(class="sub-header").
-      <a href="/view/<%= config %>"><%= config %></a>
-    <%= values %>
-    form(class='form-inline' id='key-value-add')
-      div(class='form-group')
-        input(name='key' type='text' class='form-control' id='key' placeholder='Key')
-        input(name='value' type='text' class='form-control' id='value' placeholder='Value')
-      button(type='submit' class='btn btn-default' data-id='#{config}') Add
+  h2(class="sub-header").
+    <a href="/view/<%= config %>"><%= config %></a>
+  <%= values %>
+  form(class='form-inline' id='key-value-add')
+    div(class='form-group')
+      input(name='key' type='text' class='form-control' id='key' placeholder='Key')
+      input(name='value' type='text' class='form-control' id='value' placeholder='Value')
+    button(type='submit' class='btn btn-default' data-id='#{config}') Add
 
 script(type='text/html' id='config-collection-model-view')
   div
