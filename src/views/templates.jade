@@ -2,14 +2,19 @@ script(type='text/html' id='config-model-values-value-view')
   tr
     td <%= name %>
     td <%= value %>
+    td.
+      <button class='btn btn-danger' data-config="<%= config %>" data-name="<%= name %>">delete</button>
 
 script(type='text/html' id='config-model-values-view')
   table(class="table table-striped")
-    col(style='width: 50%')
+    col(style='width: 45%')
+    col(style='width: 45%')
+    col(style='width: 10%')
     thead
       tr
         th Key
         th Value
+        th Delete
     tbody
       <%= values %>
 

@@ -15,11 +15,13 @@ window.ConfigModelValuesView = Backbone.View.extend({
   valuesTemplate: _.template($("#config-model-values-value-view").html()),
   initialize: function(options) {
     this.values = options.values;
+    this.config = options.config;
   },
   render: function() {
     var html = "";
     var self = this;
     _.each(this.values, function(v) {
+      v.config = self.config;
       html += self.valuesTemplate(v);
     });
 
@@ -34,8 +36,8 @@ window.ConfigModelView = Backbone.View.extend({
     this.model.on('change', function() {
       self.render();
     });
-    var valueView = new window.ConfigModelValuesView({values: this.model.get("conf")});
     var config = this.model.id;
+    var valueView = new window.ConfigModelValuesView({values: this.model.get("conf"), conf: config});
     var values = valueView.render()
     var data = { "config": config, "values": values};
     var html = this.template(data);
@@ -80,7 +82,7 @@ window.ConfigCollectionModelView = Backbone.View.extend({
     this.model.on('change', function() {
       self.render();
     });
-    var valueView = new window.ConfigModelValuesView({values: this.model.get("conf")});
+    var valueView = new window.ConfigModelValuesView({values: this.model.get("conf"), config: this.model.id});
     var config = this.model.id;
     var values = valueView.render()
     var data = { "config": config, "values": values};
@@ -99,7 +101,6 @@ window.ConfigCollectionView = Backbone.View.extend({
     this.collection.forEach(this.renderOne.bind(this));
   },
   renderOne: function(c) {
-    console.log(c); 
     var view = new window.ConfigCollectionModelView({el: this.el, model: c});
     this.el.append(view.render());
   }
