@@ -34,3 +34,21 @@ script(type='text/html' id='config-collection-model-view')
       <a href="/view/<%= config %>"><%= config %></a>
     <%= values %>
 
+script(type='text/html' id='state-model-view')
+  form(class='form-horizontal pull-left')
+    div(class='form-group')
+      label(class='col-md-4 control-label') State
+      div(class="col-sm-8")
+        p(class="form-control-static") <%= state.state.name %>
+    div(class='form-group')
+      label(class='col-md-4 control-label') ID
+      div(class="col-sm-8")
+        p(class="form-control-static") <%= state.id %>
+    div(class='form-group')
+      label(class='col-md-4 control-label') Password
+      div(class="col-sm-8")
+        p(class="form-control-static") <%= state.pass %>
+    div(class='form-group')
+      label(class='col-md-4 control-label') Timeout
+      div(class="col-sm-8")
+        p(class="form-control-static") <%= state.timeout %>

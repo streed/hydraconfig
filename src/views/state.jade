@@ -1,0 +1,16 @@
+extend layout
+block container
+  div(class='state')
+
+block append scripts
+  include templates
+  script(type='text/javascript').
+    $(function() {
+      var state = window.state = new window.StateModel();
+      state.fetch({success: function() {
+          var view = window.view = new window.StateModelView({el: $(".state"), model: state});
+          view.render();
+        }
+      });
+    });
+  script(type='text/javascript' src='/js/state.js')
