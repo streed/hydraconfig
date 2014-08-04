@@ -13,20 +13,18 @@ html
             span(class="icon-bar")
             span(class="icon-bar")
             span(class="icon-bar")
-          a(class="navbar-brand" href="#") FetchConf
-        div(class="navbar-collapse collapse")
-          ul(class="nav navbar-nav navbar-right")
-          form(class="navbar-form navbar-right")
-            input(type="text" class="form-control" placeholder="Search...")
+          a(class="navbar-brand" href="/") FetchConf
+        block navbar
+          div(class="navbar-collapse collapse")
+            ul(class="nav navbar-nav pull-right")
+            form(class="navbar-form navbar-right" action='/login' method='post')
+              input(type="text" class="span2" placeholder="Email")
+              input(type="password" class="span2" placeholder="Password")
+              button(type='submit' class='btn') Sign In
 
     div(class="container-fluid")
       div(class="row")
-        div(class="col-sm-3 col-md-2 sidebar")
-          ul(class="nav nav-sidebar")
-            li
-              a(href="/") View All
-            li
-              a(href="/new") New Config
+        block sidebar
         div(class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main")
           block container
 

@@ -1,21 +1,57 @@
 log4js = require 'log4js'
 app = require('./app').app
+crypto = require 'crypto'
 
 Q = require 'q'
 _ = require 'underscore'
 LOG = log4js.getLogger 'frontend'
 
-app.get "/", (req, res) ->
-  res.render 'index',
-    page: "New"
-    conf: 'All'
+checkAuth = (req, res, next) ->
+  if req.user
+    return next()
+  res.redirect "/login"
 
-app.get "/new", (req, res) ->
+app.get '/', (req, res) ->
+  res.render 'index'
+
+app.get '/register', (req, res) ->
+  res.render 'register'
+
+app.post '/register', (req, res) ->
+  sha1 = crypto.createHash('sha1')
+  user = req.body
+  password = sha1.update(user.password)
+  app.db.User.create(
+    email: user.email
+    password: password.digest('hex')
+    firstName: user.firstName
+    lastName: user.lastName
+  ).complete (err) ->
+    if err
+      LOG.error err
+    else
+      res.redirect '/login'
+
+app.get '/login', (req, res) ->
+  if req.user
+    res.redirect '/configs'
+  res.render 'login'
+
+app.post '/login', app.passport.authenticate('local', {successRedirect: '/configs', failureRedirect: '/login'})
+
+app.get '/logout', checkAuth, (req, res) ->
+  req.logout()
+  res.redirect '/'
+
+app.get '/configs', checkAuth, (req, res) ->
+  res.render 'configs'
+
+app.get "/configs/new", checkAuth, (req, res) ->
   res.render 'new',
     error: req.query.error
     message: req.query.message
 
-app.post '/new', (req, res) ->
+app.post '/configs/new', checkAuth, (req, res) ->
   if not /^[a-z0-9]+(-[a-z0-9]+)*$/ig.test req.body.configName
     res.redirect '/new?error=' + req.body.configName + '&message=Config name must follow the following format: ^[a-z0-9]+(-[a-z0-9]+)*$'
   else
@@ -43,9 +79,7 @@ app.post '/new', (req, res) ->
             res.redirect '/new?error=' + req.body.configName + '&message=Could not create or exists already'
 
 
-app.get '/view/:config', (req, res) ->
+app.get '/configs/:config', (req, res) ->
   res.render 'view',
     config: req.params.config
 
-app.get '/state', (req, res) ->
-  res.render 'state'

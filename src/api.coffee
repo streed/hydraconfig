@@ -38,7 +38,7 @@ app.put '/api/view/:config', (req, res) ->
     else
       res.status(500).end()
 
-app.get '/api/state', (req, res) ->
+app.get '/api/state', app.passport.authenticate('bearer', {session: false}), (req, res) ->
   state = app.zoo.getState()
   id = app.zoo.getSessionId()
   pass = app.zoo.getSessionPassword()

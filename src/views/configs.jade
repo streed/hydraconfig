@@ -1,0 +1,23 @@
+extend layout
+
+block sidebar
+  include sidebar
+
+block container
+  block navbar
+
+  div(class="collection")
+
+block append scripts
+  include templates
+  script(type='text/javascript').
+    $(function() {
+      console.log(window.ConfigCollection);
+      var coll = window.coll = new window.ConfigCollection();
+      coll.fetch()
+      var collView = window.collView = new window.ConfigCollectionView({el: $(".collection"), collection: coll});
+      collView.render();
+    });
+
+  script(type='text/javascript' src='/js/view.js')
+
