@@ -25,8 +25,21 @@ Config = db.define("Config",
   token: Sequelize.STRING
 )
 
+Client = db.define("Client",
+  name: Sequelize.STRING
+  clientId: Sequelize.STRING
+  clientSecret: Sequelize.STRING
+)
+
+Token = db.define("Token",
+  token: Sequelize.STRING
+)
+
 User.hasMany Config
 Config.belongsTo User
+User.hasMany Client
+User.hasMany Token
+Token.hasOne User
 
 ###
 db.sync(
