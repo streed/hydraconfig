@@ -43,7 +43,8 @@
     "crypto": "0.0.3",
     "node-uuid": "^1.4.1",
     "express-session": "^1.7.2",
-    "oauth2orize": "^1.0.1"
+    "oauth2orize": "^1.0.1",
+    "node-oauth2-server": "^2.2.2"
   },
   "devDependencies": {
     "coffee-script": "~1.7.1",

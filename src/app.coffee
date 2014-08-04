@@ -8,6 +8,8 @@ serveStatic = require 'serve-static'
 bodyParser = require 'body-parser'
 passport = require 'passport'
 crypto = require 'crypto'
+oauthserver = require 'node-oauth2-server'
+
 
 BearerStrategy = require('passport-http-bearer').Strategy
 LocalStrategy = require('passport-local').Strategy
@@ -17,6 +19,7 @@ _ = require 'underscore'
 LOG = log4js.getLogger 'app'
 
 app = express()
+app.db = require './db'
 
 compile = (str, path) ->
   return stylus(str)
@@ -39,7 +42,18 @@ app.use session({secret: "lol"})
 app.use passport.initialize()
 app.use passport.session()
 
-app.db = require './db'
+app.oauth = oauthserver(
+  model: new app.db.db.OauthModel
+  grants: ["password"]
+  debug: true
+)
+
+app.all '/api/auth', app.oauth.grant()
+app.get '/api/test', app.oauth.authorise(), (req, res) ->
+  res.send "secret"
+
+app.use app.oauth.errorHandler()
+
 
 passport.use new BearerStrategy((token, done) ->
   app.db.User.find({where: {token: token}}).complete((err, user) ->

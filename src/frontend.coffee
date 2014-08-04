@@ -79,7 +79,10 @@ app.post '/configs/new', checkAuth, (req, res) ->
             res.redirect '/new?error=' + req.body.configName + '&message=Could not create or exists already'
 
 
-app.get '/configs/:config', (req, res) ->
+app.get '/configs/:config', checkAuth, (req, res) ->
   res.render 'view',
     config: req.params.config
 
+app.get '/access', checkAuth, (req, res) ->
+  res.render 'access',
+    user: req.user

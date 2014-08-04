@@ -72,3 +72,16 @@ app.get '/api/view', (req, res) ->
       res.send all
     ).done()
 
+app.get '/api/key', (req, res) ->
+  LOG.trace req.user
+  res.send([
+    {
+      clientId: "test"
+      clientSecret: "test2"
+    }
+    {
+      clientId: "test"
+      clientSecret: "test2"
+    }
+  ])
+  

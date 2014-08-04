@@ -52,3 +52,18 @@ script(type='text/html' id='state-model-view')
       label(class='col-md-4 control-label') Timeout
       div(class="col-sm-8")
         p(class="form-control-static") <%= state.timeout %>
+
+script(type='text/html' id='apiKey-model-view')
+  form(class="form-horizontal" role="form")
+    div(class="form-group")
+      label(class="col-sm-2 control-label") clientId
+      div(class="col-sm-8")
+        p(class="form-control-static") <%= clientId %>
+    div(class="form-group")
+      label(class="col-sm-2 control-label") clientSecret
+      div(class="col-sm-8")
+        p(class="form-control-static") <%= clientSecret %>
+    div(class="form-group")
+      div(class="col-sm-8 col-sm-offset-2")
+        button(class='btn btn-danger muted' data-apiKey="<%= apiKey %>" data-name="<%= name %>") delete
+

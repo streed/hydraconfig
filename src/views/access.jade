@@ -1,0 +1,23 @@
+extend layout
+
+block sidebar
+  include sidebar
+
+block container   
+  form(method='post' action='/access' role='form' name='newApiKey')
+    button(type='submit' class='btn btn-default btn-success') Generate New Api Key
+
+  div(class='keys')
+
+block append scripts
+  include templates
+  script(type='text/javascript').
+    $(function() {
+      var keys = window.keys = new window.ApiKeyCollection();
+      keys.fetch({success: function() {
+          var view = window.view = new window.ApiKeyCollectionView({el: $(".keys"), collection: keys});
+          view.render();
+        }
+      });
+    });
+  script(type='text/javascript' src='/js/keys.js')
