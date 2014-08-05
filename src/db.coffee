@@ -34,6 +34,7 @@ AccessToken = db.define("AccessToken",
 OauthClient = db.define("OauthClient",
   clientId: Sequelize.STRING
   clientSecret: Sequelize.STRING
+  type: Sequelize.ENUM("internal", "public")
 )
 
 RefreshToken = db.define("RefreshToken",

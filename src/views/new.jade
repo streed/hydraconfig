@@ -10,7 +10,7 @@ block container
         p
           strong #{error}
           |  - #{message}
-  form(method='post' action='/new' role='form' name='newConfig')
+  form(method='post' action='/configs/new' role='form' name='newConfig')
     div(class='form-group')
       label(for='confName') Config Name
       input(name='configName' type='text' class='form-control' id='confName' placeholder='Config Name')

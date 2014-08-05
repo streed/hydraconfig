@@ -60,7 +60,7 @@ app.get '/api/config', app.passport.authenticate('bearer', {session: false}), (r
     ).done()
 
 app.get '/api/key/:userId', app.passport.authenticate('bearer', {session: false}), (req, res) ->
-  app.db.OauthClient.findAll({where: {userId: req.params.userId}}).complete (err, clients) ->
+  app.db.OauthClient.findAll({where: {userId: req.params.userId, type: "public"}}).complete (err, clients) ->
     if err
       res.status(500).done()
 
@@ -71,8 +71,8 @@ app.get '/api/key/:userId', app.passport.authenticate('bearer', {session: false}
     
   
 app.put '/api/key/new', app.passport.authenticate('bearer', {session: false}), (req, res) ->
-  app.db.OauthClient.count({where: {userId: req.body.userId}}).success (c) ->
-    if c < 5
+  app.db.OauthClient.count({where: {userId: req.body.userId, type:"public"}}).success (c) ->
+    if c < 1
       crypto.randomBytes 12, (ex, buf) ->
         clientId = buf.toString 'hex'
         crypto.randomBytes 24, (ex, buf2) ->

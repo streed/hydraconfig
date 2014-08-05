@@ -53,7 +53,7 @@ app.get "/configs/new", checkAuth, (req, res) ->
 
 app.post '/configs/new', checkAuth, (req, res) ->
   if not /^[a-z0-9]+(-[a-z0-9]+)*$/ig.test req.body.configName
-    res.redirect '/new?error=' + req.body.configName + '&message=Config name must follow the following format: ^[a-z0-9]+(-[a-z0-9]+)*$'
+    res.redirect '/configs/new?error=' + req.body.configName + '&message=Config name must follow the following format: ^[a-z0-9]+(-[a-z0-9]+)*$'
   else
     LOG.info "Checking if /configs/" + req.body.configName + " exists"
     app.zoo.exists '/configs' + req.body.configName, (err, stat) ->
