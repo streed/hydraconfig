@@ -6,12 +6,7 @@ Q = require 'q'
 _ = require 'underscore'
 LOG = log4js.getLogger 'api'
 
-checkAuth = (req, res, next) ->
-  if req.user
-    return next()
-  res.redirect "/login"
-
-app.get '/api/view/:config', (req, res) ->
+app.get '/api/config/:config', app.passport.authenticate('bearer', {session: false}), (req, res) ->
   config = req.params.config
   LOG.info "Getting /configs/" + config
 
@@ -26,7 +21,7 @@ app.get '/api/view/:config', (req, res) ->
     else
       res.status 404
 
-app.put '/api/view/:config', (req, res) ->
+app.put '/api/config/:config', app.passport.authenticate('bearer', {session: false}), (req, res) ->
   config = req.params.config
   conf = req.body
 
@@ -44,10 +39,9 @@ app.put '/api/view/:config', (req, res) ->
     else
       res.status(500).end()
 
-app.get '/api/view', (req, res) ->
+app.get '/api/config', app.passport.authenticate('bearer', {session: false}), (req, res) ->
   all = []
   app.zoo.getChildren '/configs', (err, children, stats) ->
-    LOG.info "Getting data from all: ", children
     Q.allSettled(_.map(children, ((x) ->
       deferred = Q.defer()
       app.zoo.getData '/configs/' + x, (err, data, stat) ->
@@ -62,11 +56,10 @@ app.get '/api/view', (req, res) ->
     ))).then((results) ->
       for r in results
         all.push r.value
-
       res.send all
     ).done()
 
-app.get '/api/key/:userId', checkAuth, (req, res) ->
+app.get '/api/key/:userId', app.passport.authenticate('bearer', {session: false}), (req, res) ->
   app.db.OauthClient.findAll({where: {userId: req.params.userId}}).complete (err, clients) ->
     if err
       res.status(500).done()
@@ -77,8 +70,7 @@ app.get '/api/key/:userId', checkAuth, (req, res) ->
       res.send []
     
   
-app.put '/api/key/new', checkAuth, (req, res) ->
-  LOG.trace req.user
+app.put '/api/key/new', app.passport.authenticate('bearer', {session: false}), (req, res) ->
   app.db.OauthClient.count({where: {userId: req.body.userId}}).success (c) ->
     if c < 5
       crypto.randomBytes 12, (ex, buf) ->
@@ -88,11 +80,9 @@ app.put '/api/key/new', checkAuth, (req, res) ->
           app.db.OauthClient.create({
             clientId: clientId
             clientSecret: clientSecret
-            redirect_uri: "http://fetch.conf"
           }).success (oauthClient) ->
             oauthClient.setUser(req.user).success (user) ->
               res.send oauthClient
     else
       res.send {}
-
 

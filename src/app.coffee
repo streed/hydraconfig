@@ -10,7 +10,6 @@ passport = require 'passport'
 crypto = require 'crypto'
 oauthserver = require 'node-oauth2-server'
 
-
 BearerStrategy = require('passport-http-bearer').Strategy
 LocalStrategy = require('passport-local').Strategy
 
@@ -55,15 +54,17 @@ app.use app.oauth.errorHandler()
 
 
 passport.use new BearerStrategy((token, done) ->
-  app.db.User.find({where: {token: token}}).complete((err, user) ->
-    LOG.info "auth ", err, user
+  app.db.AccessToken.find({where: {accessToken: token}}).complete((err, token) ->
+    LOG.info "auth ", err, token
     if err
       return done(err)
-    if not user
+    if not token
       return done null, false
-    return done( null, user,
-      scope: 'read/write'
-    )
+
+    app.db.User.find({where: {id: token.userId}}).success (user) ->
+      return done( null, user,
+        scope: 'read/write'
+      )
   )
 )
 
@@ -82,12 +83,10 @@ passport.use new LocalStrategy((email, password, done) ->
 )
 
 passport.serializeUser (user, done) ->
-  LOG.info "serializeUser ", user.id
   return done(null, user.id)
 
 passport.deserializeUser (id, done) ->
   app.db.User.find({where: {id: id}}).complete((err, user) ->
-    LOG.info "deserializeUser ", id
     if err
       return done(err)
     if not user

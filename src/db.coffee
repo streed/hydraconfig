@@ -34,7 +34,6 @@ AccessToken = db.define("AccessToken",
 OauthClient = db.define("OauthClient",
   clientId: Sequelize.STRING
   clientSecret: Sequelize.STRING
-  redirect_uri: Sequelize.STRING
 )
 
 RefreshToken = db.define("RefreshToken",
