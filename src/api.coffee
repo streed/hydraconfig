@@ -1,9 +1,15 @@
 log4js = require 'log4js'
 app = require('./app').app
+crypto = require 'crypto'
 
 Q = require 'q'
 _ = require 'underscore'
 LOG = log4js.getLogger 'api'
+
+checkAuth = (req, res, next) ->
+  if req.user
+    return next()
+  res.redirect "/login"
 
 app.get '/api/view/:config', (req, res) ->
   config = req.params.config
@@ -38,18 +44,6 @@ app.put '/api/view/:config', (req, res) ->
     else
       res.status(500).end()
 
-app.get '/api/state', app.passport.authenticate('bearer', {session: false}), (req, res) ->
-  state = app.zoo.getState()
-  id = app.zoo.getSessionId()
-  pass = app.zoo.getSessionPassword()
-  timeout = app.zoo.getSessionTimeout()
-
-  res.send
-    state: state
-    id: id.toString("hex")
-    pass: pass.toString("hex")
-    timeout: timeout
-
 app.get '/api/view', (req, res) ->
   all = []
   app.zoo.getChildren '/configs', (err, children, stats) ->
@@ -72,16 +66,33 @@ app.get '/api/view', (req, res) ->
       res.send all
     ).done()
 
-app.get '/api/key', (req, res) ->
-  LOG.trace req.user
-  res.send([
-    {
-      clientId: "test"
-      clientSecret: "test2"
-    }
-    {
-      clientId: "test"
-      clientSecret: "test2"
-    }
-  ])
+app.get '/api/key/:userId', checkAuth, (req, res) ->
+  app.db.OauthClient.findAll({where: {userId: req.params.userId}}).complete (err, clients) ->
+    if err
+      res.status(500).done()
+
+    if clients
+      res.send clients
+    else
+      res.send []
+    
   
+app.put '/api/key/new', checkAuth, (req, res) ->
+  LOG.trace req.user
+  app.db.OauthClient.count({where: {userId: req.body.userId}}).success (c) ->
+    if c < 5
+      crypto.randomBytes 12, (ex, buf) ->
+        clientId = buf.toString 'hex'
+        crypto.randomBytes 24, (ex, buf2) ->
+          clientSecret = buf2.toString 'hex'
+          app.db.OauthClient.create({
+            clientId: clientId
+            clientSecret: clientSecret
+            redirect_uri: "http://fetch.conf"
+          }).success (oauthClient) ->
+            oauthClient.setUser(req.user).success (user) ->
+              res.send oauthClient
+    else
+      res.send {}
+
+

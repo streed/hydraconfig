@@ -15,7 +15,6 @@ User = db.define("User",
   lastName: Sequelize.STRING
   email: Sequelize.STRING
   password: Sequelize.STRING
-  token: Sequelize.STRING
   conf:Sequelize.STRING
 )
 
@@ -23,13 +22,6 @@ Config = db.define("Config",
   maxKeys: Sequelize.INTEGER
   zkPath: Sequelize.STRING
   token: Sequelize.STRING
-)
-
-AuthCode = db.define("AuthCode",
-  authCode: Sequelize.STRING
-  clientId: Sequelize.STRING
-  expires: Sequelize.DATE
-  userId: Sequelize.INTEGER
 )
 
 AccessToken = db.define("AccessToken",
@@ -42,7 +34,7 @@ AccessToken = db.define("AccessToken",
 OauthClient = db.define("OauthClient",
   clientId: Sequelize.STRING
   clientSecret: Sequelize.STRING
-  redirectUri: Sequelize.STRING
+  redirect_uri: Sequelize.STRING
 )
 
 RefreshToken = db.define("RefreshToken",
@@ -55,6 +47,60 @@ RefreshToken = db.define("RefreshToken",
 User.hasMany Config
 Config.belongsTo User
 
+OauthClient.belongsTo User
+
+db.OauthModel = class OauthModel
+  getAccessToken: (bearerToken, callback) ->
+    AccessToken.find({where: {accessToken: bearerToken}}).complete (err, accessToken) ->
+      if err
+        return callback(err)
+      
+      callback null, accessToken
+
+  getClient: (clientId, clientSecret, callback) ->
+    OauthClient.find({where: {clientId: clientId, clientSecret: clientSecret}}).complete (err, client) ->
+      if err
+        return callback(err)
+      
+      return callback(null, client)
+
+  getRefreshToken: (bearerToken, callback) ->
+    RefreshToken.find({where: {refreshToken: bearerToken}}).complete (err, refreshToken) ->
+      if err
+        return callback(err)
+
+      return callback(null, refreshToken)
+
+  getUserFromClient: (clientId, clientSecret, callback) ->
+    OauthClient.find({where: {clientId: clientId, clientSecret: clientSecret}}).complete (err, client) ->
+      if err
+        return callback(err)
+      client.getUser().success (user) ->
+        return callback(null, user)
+
+  grantTypeAllowed: (clientId, grantType, callback) ->
+    if grantType == "client_credentials" or grantType == "refresh_token"
+      return callback(null, true)
+    return callback(null, false)
+
+  saveAccessToken: (accessToken, clientId, expires, user, callback) ->
+    AccessToken.create(
+      accessToken: accessToken
+      clientId: clientId
+      userId: user.id
+      expires: expires
+    ).complete (err) ->
+      callback(err)
+
+  saveRefreshToken: (refreshToken, clientId, expires, user, callback) ->
+    RefreshToken.create(
+      refreshToken: refreshToken
+      clientId: clientId
+      userId: user.id
+      expires: expires
+    ).complete (err) ->
+      callback(err)
+
 ###
 db.sync(
   force: true
@@ -66,75 +112,8 @@ db.sync(
     load.resolve()
 )
 ###
-
-db.OauthModel = class OauthModel
-  getAuthCode: (authCode, callback) ->
-    AuthCode.find({where: {authCode: authCode}}).complete (err, authCode) ->
-      if err
-        return callback(err)
-
-      callback null, authCode
-
-  getAccessToken: (bearerToken, callback) ->
-    AccessToken.find({where: {accessToken: bearerToken}}).complete (err, accessToken) ->
-      if err
-        return callback(err)
-      
-      callback null, accessToken
-
-  getClient: (clientId, clientSecret, callback) ->
-    OauthClient.find({where: {clientId: clientId}}).complete (err, client) ->
-      if err
-        return callback(err)
-      
-      return callback(null, client)
-
-  getRefreshToken: (bearerToken, callback) ->
-    RefreshTokens.find({where: {refreshToken: bearerToken}}).complete (err, refreshToken) ->
-      if err
-        return callback(err)
-      return callback(null, refreshToken)
-
-  getGrantType: (clientId, grantType, callback) ->
-    if grantType == "authorization_code"
-      return callback(null, true)
-    return callback(null, false)
-
-  saveAuthCode: (authCode, clientId, expires, user, callback) ->
-    AuthCode.create(
-      authCode: authCode
-      clientId: clientId
-      expires: expires
-      user: user
-    ).complete (err) ->
-      callback(err)
-
-  saveAccessToken: (accessToken, clientId, expires, userId, callback) ->
-    AccessToken.create(
-      accessToken: accessToken
-      clientId: clientId
-      userId: userId
-      expires: expires
-    ).complete (err) ->
-      callback(err)
-
-  saveRefreshToken: (refreshToken, clientId, userId, expires, callback) ->
-    RefreshToken.create(
-      refreshToken: refreshToken
-      clientId: clientId
-      userId: userId
-      expires: expires
-    ).complete (err) ->
-      callback(err)
-
-  getUser: (email, password, callback) ->
-    User.find({where: {email: email}}).complete (err, user) ->
-      if err
-        return callback(err)
-
-      callback(null, {userId: user.id})
-
 load.resolve()
+
 db.User = User
 db.Config = Config
 db.AccessToken = AccessToken

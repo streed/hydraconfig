@@ -86,3 +86,4 @@ app.get '/configs/:config', checkAuth, (req, res) ->
 app.get '/access', checkAuth, (req, res) ->
   res.render 'access',
     user: req.user
+

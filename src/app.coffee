@@ -19,6 +19,11 @@ _ = require 'underscore'
 LOG = log4js.getLogger 'app'
 
 app = express()
+app.use bodyParser.urlencoded(
+  extended: true
+)
+app.use bodyParser.json()
+
 app.db = require './db'
 
 compile = (str, path) ->
@@ -33,10 +38,6 @@ app.use stylus.middleware
   compile: compile
 app.use serveStatic __dirname + '/public'
 app.use morgan 'short'
-app.use bodyParser.json()
-app.use bodyParser.urlencoded(
-  extended: true
-)
 
 app.use session({secret: "lol"})
 app.use passport.initialize()
@@ -44,14 +45,12 @@ app.use passport.session()
 
 app.oauth = oauthserver(
   model: new app.db.db.OauthModel
-  grants: ["password"]
+  grants: ["client_credentials", "refresh_token"]
   debug: true
 )
 
-app.all '/api/auth', app.oauth.grant()
-app.get '/api/test', app.oauth.authorise(), (req, res) ->
-  res.send "secret"
 
+app.all '/oauth/token', app.oauth.grant()
 app.use app.oauth.errorHandler()
 
 

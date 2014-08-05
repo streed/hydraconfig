@@ -6,7 +6,9 @@ window.ApiKeyModel = Backbone.Model.extend({
 
 window.ApiKeyCollection = Backbone.Collection.extend({
   model: ApiKeyModel,
-  url: '/api/key'
+  url: function() {
+    return '/api/key/' + this.userId
+  }
 });
 
 window.ApiKeyCollectionModelView = Backbone.View.extend({
@@ -24,6 +26,16 @@ window.ApiKeyCollectionView = Backbone.View.extend({
     this.collection = options.collection;
     this.collection.bind('add', this.render.bind(this));
     this.collection.bind('change', this.render.bind(this));
+    var self = this;
+    $(".generate-key").click(function(e) {
+      e.preventDefault()
+      fake = new window.ApiKeyModel();
+      fake.save({userId: options.userId, id: "new"}, {
+        success: function() {
+          self.collection.fetch();
+        }
+      });
+    });
   },
   render: function() {
     $(this.el).empty();
