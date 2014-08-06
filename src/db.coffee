@@ -44,6 +44,10 @@ AccessToken = db.define("AccessToken",
     }
   }
   expires: Sequelize.DATE
+  session: {
+    type: Sequelize.BOOLEAN
+    defaultValue: false
+  }
 )
 
 OauthClient = db.define("OauthClient",

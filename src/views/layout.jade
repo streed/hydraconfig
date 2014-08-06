@@ -34,4 +34,14 @@ html
     script(type='text/javascript' src='//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js')
     script(type='text/javascript' src='//cdnjs.cloudflare.com/ajax/libs/backbone.js/1.1.2/backbone-min.js')
     script(type='text/javascript' src='//cdnjs.cloudflare.com/ajax/libs/q.js/1.0.1/q.js')
-    script(type='text/javascript' src='/js/auth.js')
+    script(type='text/javascript').
+      window.accessToken = "#{accessToken}";
+
+      var backboneSyncOld = Backbone.sync;
+      Backbone.sync = function(method, model, options) {
+        options.headers = {
+          'Authorization': 'Bearer ' + window.accessToken
+        }
+
+        backboneSyncOld(method, model, options);
+      }

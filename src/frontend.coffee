@@ -48,7 +48,8 @@ app.post '/login', app.passport.authenticate('local', {successRedirect: '/config
 
 app.get '/logout', checkAuth, (req, res) ->
   req.logout()
-  res.redirect '/'
+  app.db.AccessToken.destroy({accessToken: req.session.accessToken, session: true}).success () ->
+    res.redirect '/'
 
 app.get '/configs', checkAuth, (req, res) ->
   res.render 'configs'
