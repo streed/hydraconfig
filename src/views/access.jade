@@ -1,4 +1,7 @@
 extend layout
+block navbar
+  form(class="navbar-form navbar-right" method="get" action='/logout')
+    button(type='submit' class='btn btn-danger') Logout
 
 block sidebar
   include sidebar
