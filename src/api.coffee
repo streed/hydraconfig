@@ -80,6 +80,7 @@ app.put '/api/key/new', app.passport.authenticate('bearer', {session: false}), (
           app.db.OauthClient.create({
             clientId: clientId
             clientSecret: clientSecret
+            type: "public"
           }).success (oauthClient) ->
             oauthClient.setUser(req.user).success (user) ->
               res.send oauthClient

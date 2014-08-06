@@ -5,49 +5,93 @@ Q = require 'q'
 load = Q.defer()
 
 Sequelize = require 'sequelize'
-db = new Sequelize('fetchconf', 'root', 'root', {
-  dialect: 'sqlite'
-  storage: '/tmp/fetchconf.sqlite'
+db = new Sequelize('fetchconf', 'root', '', {
+  dialect: 'mysql'
+  host: "localhost"
+  pool: { maxConnections: 5, maxIdleTime: 30},
 })
 
 User = db.define("User",
   firstName: Sequelize.STRING
   lastName: Sequelize.STRING
-  email: Sequelize.STRING
+  email: {
+    type: Sequelize.STRING
+    unique: true
+    validators: {
+      isEmail: true
+    }
+  }
   password: Sequelize.STRING
-  conf:Sequelize.STRING
+  zkChroot: {
+    type: Sequelize.STRING
+    unique: true
+    validators: {
+      len: 24
+    }
+  }
 )
 
 Config = db.define("Config",
-  maxKeys: Sequelize.INTEGER
-  zkPath: Sequelize.STRING
-  token: Sequelize.STRING
+  path: Sequelize.STRING
 )
 
 AccessToken = db.define("AccessToken",
-  accessToken: Sequelize.STRING
-  clientId: Sequelize.STRING
-  userId: Sequelize.INTEGER
+  accessToken: {
+    type: Sequelize.STRING
+    unique: true
+    validators: {
+      len: 24
+    }
+  }
   expires: Sequelize.DATE
 )
 
 OauthClient = db.define("OauthClient",
-  clientId: Sequelize.STRING
-  clientSecret: Sequelize.STRING
+  clientId: {
+    type: Sequelize.STRING
+    unique: true
+    validators: {
+      len: 24
+    }
+  }
+  clientSecret: {
+    type: Sequelize.STRING
+    unique: true
+    validators: {
+      len: 48
+    }
+  }
   type: Sequelize.ENUM("internal", "public")
 )
 
 RefreshToken = db.define("RefreshToken",
-  refreshToken: Sequelize.STRING
-  clientId: Sequelize.STRING
-  userId: Sequelize.INTEGER
+  refreshToken: {
+    type: Sequelize.STRING
+    unique: true
+    validators: {
+      len: 24
+    }
+  }
   expires: Sequelize.DATE
 )
 
 User.hasMany Config
 Config.belongsTo User
 
+User.hasMany AccessToken
+AccessToken.belongsTo User
+
+User.hasMany OauthClient
 OauthClient.belongsTo User
+
+User.hasMany RefreshToken
+RefreshToken.belongsTo User
+
+OauthClient.hasMany AccessToken
+AccessToken.belongsTo OauthClient
+
+OauthClient.hasMany RefreshToken
+RefreshToken.belongsTo OauthClient
 
 db.OauthModel = class OauthModel
   getAccessToken: (bearerToken, callback) ->
@@ -79,41 +123,41 @@ db.OauthModel = class OauthModel
         return callback(null, user)
 
   grantTypeAllowed: (clientId, grantType, callback) ->
-    if grantType == "client_credentials" or grantType == "refresh_token"
+    if grantType == "client_credentials" or grantType == "refresh_token" or grantType == "password"
       return callback(null, true)
     return callback(null, false)
 
   saveAccessToken: (accessToken, clientId, expires, user, callback) ->
     AccessToken.create(
       accessToken: accessToken
-      clientId: clientId
-      userId: user.id
       expires: expires
-    ).complete (err) ->
-      callback(err)
+    ).success(token) ->
+      token.setUser(user).success () ->
+        db.OauthClient.find({where: {clientId: clientId}}).success (client) ->
+          token.setOauthClient(client).success () ->
+            callback null
 
   saveRefreshToken: (refreshToken, clientId, expires, user, callback) ->
     RefreshToken.create(
       refreshToken: refreshToken
-      clientId: clientId
-      userId: user.id
       expires: expires
-    ).complete (err) ->
-      callback(err)
+    ).success (token) ->
+      token.setUser(user).success () ->
+        db.OauthClient.find({where: {clientId: clientId}}).success (client) ->
+          token.setOauthClient(client).success () ->
+            callback null
 
 ###
-db.sync(
-  force: true
-).complete((err) ->
-  if err
-    LOG.error err
-  else
+db.dropAllSchemas().success( () ->
+  db.sync(
+    force: true
+  ).success(() ->
     LOG.info 'Synched database'
     load.resolve()
+  )
 )
 ###
 load.resolve()
-
 db.User = User
 db.Config = Config
 db.AccessToken = AccessToken

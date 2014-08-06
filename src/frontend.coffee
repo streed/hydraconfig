@@ -26,11 +26,18 @@ app.post '/register', (req, res) ->
     password: password.digest('hex')
     firstName: user.firstName
     lastName: user.lastName
-  ).complete (err) ->
-    if err
-      LOG.error err
-    else
-      res.redirect '/login'
+  ).success (user) ->
+    crypto.randomBytes 12, (ex, buf) ->
+      clientId = buf.toString 'hex'
+      crypto.randomBytes 24, (ex, buf2) ->
+        clientSecret = buf2.toString 'hex'
+        app.db.OauthClient.create({
+          clientId: clientId
+          clientSecret: clientSecret
+          type: "internal"
+        }).success (oauthClient) ->
+          oauthClient.setUser(user).success (user) ->
+            res.redirect '/login'
 
 app.get '/login', (req, res) ->
   if req.user

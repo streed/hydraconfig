@@ -44,14 +44,37 @@ app.use passport.session()
 
 app.oauth = oauthserver(
   model: new app.db.db.OauthModel
-  grants: ["client_credentials", "refresh_token"]
+  grants: ["password", "client_credentials", "refresh_token"]
   debug: true
 )
-
 
 app.all '/oauth/token', app.oauth.grant()
 app.use app.oauth.errorHandler()
 
+app.use (req, res, next) ->
+  if req.session.accessToken or not (req.user)
+    LOG.trace "No user"
+    next()
+  else
+    crypto.randomBytes 24, (ex, buf) ->
+      accessToken = buf.toString('hex')
+      app.db.OauthClient.find({where: {userId: req.user.id, type: "internal"}}).complete (err, client) ->
+        if err
+          next()
+
+        if client
+          LOG.trace client, req.session.accessToken
+          app.db.AccessToken.create(
+            accessToken: accessToken
+            userId: req.user.id
+            expires: new Date(Date.now() + 3600000)
+          ).complete (err, token) ->
+            token.setUser(req.user).success () ->
+              token.setOauthClient(client).success () ->
+                req.session.accessToken = accessToken
+                next()
+        else
+          next()
 
 passport.use new BearerStrategy((token, done) ->
   app.db.AccessToken.find({where: {accessToken: token}}).complete((err, token) ->
