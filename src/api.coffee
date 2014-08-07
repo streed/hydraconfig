@@ -100,3 +100,17 @@ app.put '/api/key/new', app.passport.authenticate('bearer', {session: false}), (
     else
       res.send {}
 
+app.get '/api/watch/:config', app.passport.authenticate('bearer', {session: false}), (req, res) ->
+  config = req.params.config
+  app.zoo.exists req.user.zkChroot + config, (err, stat) ->
+    if err
+      LOG.error err
+
+    if stat
+      app.zoo.getData req.user.zkChroot + config, ((event) ->
+        app.zoo.getData req.user.zkChroot + config, (err, data, stat) ->
+          res.send data
+      ),((err, data, stat) ->
+        LOG.info "Placed watcher"
+      )
+
