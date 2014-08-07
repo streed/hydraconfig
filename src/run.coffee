@@ -35,3 +35,4 @@ Q.all([db.load]).then ->
     client.connect()
 
     app.zoo = client
+    app.zoo.zkBase = "/configs/"

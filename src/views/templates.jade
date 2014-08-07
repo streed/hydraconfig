@@ -20,7 +20,7 @@ script(type='text/html' id='config-model-values-view')
 
 script(type='text/html' id='config-model-view')
   h2(class="sub-header").
-    <a href="/view/<%= config %>"><%= config %></a>
+    <a href="/configs/<%= config %>"><%= config %></a>
   <%= values %>
   form(class='form-inline' id='key-value-add')
     div(class='form-group')
@@ -31,7 +31,7 @@ script(type='text/html' id='config-model-view')
 script(type='text/html' id='config-collection-model-view')
   div
     h2(class="sub-header").
-      <a href="/view/<%= config %>"><%= config %></a>
+      <a href="/configs/<%= config %>"><%= config %></a>
     <%= values %>
 
 script(type='text/html' id='state-model-view')

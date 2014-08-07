@@ -1,7 +1,7 @@
 request = require("request");
 
-clientId = "48ca25eee4f060ebf0689d52";
-clientSecret = "f298e2a94ccb72d95e8be875f5c55e518b848eaddd8d3dbc"
+clientId = "8a1143fe5910ed00ec1489ce";
+clientSecret = "c12516026334fb8dd0890090bfe2d25392e2ce2f7a8f177f"
 
 data = {
   "grant_type": "client_credentials",
@@ -10,17 +10,8 @@ data = {
 };
 
 request.post("http://localhost:8080/oauth/token", {form: data}, function(err, response, body) {
-  console.log( body );
-
-  refresh = JSON.parse(body).refresh_token
-  data = { 
-    "grant_type": "refresh_token",
-    "client_id": clientId,
-    "client_secret": clientSecret,
-    "refresh_token": refresh
-  }
-
-  request.post("http://localhost:8080/oauth/token", {form: data}, function(err, response, body) {
-    console.log(body);
-  })
+  accessToken = JSON.parse(body).access_token
+  request.get({ url: "http://localhost:8080/api/config", headers: { "Authorization": "Bearer " + accessToken } }, function( err, response, body) {
+    console.log(JSON.stringify(JSON.parse(body), null, 2));
+  });
 })

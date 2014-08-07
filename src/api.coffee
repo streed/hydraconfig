@@ -10,7 +10,7 @@ app.get '/api/config/:config', app.passport.authenticate('bearer', {session: fal
   config = req.params.config
   LOG.info "Getting /configs/" + config
 
-  app.zoo.getData '/configs/' + config, (err, data, stat) ->
+  app.zoo.getData req.user.zkChroot + config, (err, data, stat) ->
     if err
       LOG.error err.stack
       res.status 404
@@ -29,22 +29,35 @@ app.put '/api/config/:config', app.passport.authenticate('bearer', {session: fal
     if !/[a-z0-9]+(\.[a-z0-9]+)*/i.test d.name
       res.status(500).end()
       return
-
-  app.zoo.setData '/configs/' + config, new Buffer(JSON.stringify(req.body)), (err, stat) ->
+  app.zoo.exists req.user.zkChroot.slice(0, -1), (err, stat) ->
     if err
       LOG.error err
 
     if stat
-      res.status(200).end()
+      app.zoo.setData req.user.zkChroot + config, new Buffer(JSON.stringify(req.body)), (err, stat) ->
+        if err
+          LOG.error err
+
+        if stat
+          res.status(200).end()
+        else
+          res.status(500).end()
     else
-      res.status(500).end()
+      app.zoo.create req.user.zkChroot + config, new Buffer(JSON.stringify(res.body)), (err, stat) ->
+        if err
+          LOG.error err
+
+        if stat
+          res.status(200).end()
+        else
+          res.status(500).end()
 
 app.get '/api/config', app.passport.authenticate('bearer', {session: false}), (req, res) ->
   all = []
-  app.zoo.getChildren '/configs', (err, children, stats) ->
+  app.zoo.getChildren req.user.zkChroot.slice(0, -1), (err, children, stats) ->
     Q.allSettled(_.map(children, ((x) ->
       deferred = Q.defer()
-      app.zoo.getData '/configs/' + x, (err, data, stat) ->
+      app.zoo.getData req.user.zkChroot + x, (err, data, stat) ->
         if err
           LOG.error err
 

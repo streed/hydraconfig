@@ -26,7 +26,7 @@ User = db.define("User",
     type: Sequelize.STRING
     unique: true
     validators: {
-      len: 24
+      len: 64
     }
   }
 )
@@ -135,7 +135,7 @@ db.OauthModel = class OauthModel
     AccessToken.create(
       accessToken: accessToken
       expires: expires
-    ).success(token) ->
+    ).success (token) ->
       token.setUser(user).success () ->
         db.OauthClient.find({where: {clientId: clientId}}).success (client) ->
           token.setOauthClient(client).success () ->
