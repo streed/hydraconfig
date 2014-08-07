@@ -61,7 +61,7 @@ app.use (req, res, next) ->
     res.locals.accessToken = req.session.accessToken
     return next()
   else
-    crypto.randomBytes 24, (ex, buf) ->
+    crypto.randomBytes 48, (ex, buf) ->
       accessToken = buf.toString('hex')
       app.db.OauthClient.find({where: {userId: req.user.id, type: "internal"}}).complete (err, client) ->
         if err
