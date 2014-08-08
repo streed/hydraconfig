@@ -57,15 +57,15 @@ app.get '/api/config', app.passport.authenticate('bearer', {session: false}), (r
   app.zoo.getChildren req.user.zkChroot.slice(0, -1), (err, children, stats) ->
     Q.allSettled(_.map(children, ((x) ->
       deferred = Q.defer()
-      app.zoo.getData req.user.zkChroot + x, (err, data, stat) ->
+      app.zoo.getData req.user.zkChroot + x,( (err, data, stat) ->
         if err
           LOG.error err
 
         if stat
           data = JSON.parse data.toString("utf8")
           deferred.resolve(data)
-
-       return deferred.promise
+      )
+      return deferred.promise
     ))).then((results) ->
       for r in results
         all.push r.value
