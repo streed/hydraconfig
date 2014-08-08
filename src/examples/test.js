@@ -1,7 +1,7 @@
 request = require("request");
 
-clientId = "8a1143fe5910ed00ec1489ce";
-clientSecret = "c12516026334fb8dd0890090bfe2d25392e2ce2f7a8f177f"
+clientId = "3ae781a47397e6d6df64b677";
+clientSecret = "88eb5df16899da110952d98462fef1f0d816c0d75427b599"
 
 data = {
   "grant_type": "client_credentials",
@@ -9,9 +9,9 @@ data = {
   "client_secret": clientSecret
 };
 
-request.post("http://localhost:8080/oauth/token", {form: data}, function(err, response, body) {
+request.post("http://elt.li/oauth/token", {form: data}, function(err, response, body) {
   accessToken = JSON.parse(body).access_token
-  request.get({ url: "http://localhost:8080/api/config", headers: { "Authorization": "Bearer " + accessToken } }, function( err, response, body) {
+  request.get({ url: "http://elt.li/api/config", headers: { "Authorization": "Bearer " + accessToken } }, function( err, response, body) {
     console.log(JSON.stringify(JSON.parse(body), null, 2));
   });
 })

@@ -1,8 +1,28 @@
 extend layout
 
 block container
-  div(class='container')
-    div(class='hero-unit')
-      h1 FetchConf
-      p Dynamic Config based on Websockets and Longpolling
-      a(href='/about' class='btn btn-primary btn-large') Learn More
+  header
+    div(class='container')
+      div(class='row')
+        div(class='col-lg-12')
+          div(class='intro-text')
+            span(class='name') Hassle Free Configs
+            hr
+            span(class='skills') Simple, Reliable, Free
+  section(id='about')
+    div(class='container')
+      div(class='row')
+        div(class='col-lg-12 text-center')
+          h2 About
+          hr
+        div(class='col-lg-4 col-lg-offset-2')
+          p Setting up and using configs should be simple. There should never be a need to maintain configuration files on servers or developer machines. We've streamlined this process
+           | by giving developers the ability to setup their configs in our service and then retrieve these configs from any client that has access to the internet.
+        div(class='col-lg-4')
+          p With our apis you can compose configs to give yourself overrides, for example production overriding api locations. Along with configuration composition we can give clients real-time
+           | configuration updates through the use of long-polling, this way all of your services are update to date with the latest configuration settings without having to restart each service.
+
+      div(class='row')
+        div(class='col-lg-offset-3 col-lg-6 text-center')
+          p With our service we aim to save developers time and give them more control of their configurations.
+

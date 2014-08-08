@@ -7,29 +7,31 @@ block sidebar
   include sidebar
 
 block container
-  div(class='error')
-    if error
-      div(class='alert alert-danger')
-        p
-          strong #{error}
-          |  - #{message}
-  form(method='post' action='/configs' role='form' name='newConfig' class='form-inline')
-    div(class='form-group')
-      input(name='configName' type='text' class='form-control' id='confName' placeholder='New Config Name')
-    button(type='submit' class='btn btn-default') Create
+  div(class='container')
+    div(class='error')
+      if error
+        div(class='alert alert-danger')
+          p
+            strong #{error}
+            |  - #{message}
 
-  div(class="collection")
+    div(class='row col-sm-offset-2 col-md-10')
+      form(method='post' action='/configs' role='form' name='newConfig' class='form-inline')
+        div(class='form-group')
+          input(name='configName' type='text' class='form-control' id='confName' placeholder='New Config Name')
+        button(type='submit' class='btn btn-default') Create
+      div(class="collection")
 
-block append scripts
-  include templates
-  script(type='text/javascript').
-    $(function() {
-      console.log(window.ConfigCollection);
-      var coll = window.coll = new window.ConfigCollection();
-      coll.fetch()
-      var collView = window.collView = new window.ConfigCollectionView({el: $(".collection"), collection: coll});
-      collView.render();
-    });
+  block append scripts
+    include templates
+    script(type='text/javascript').
+      $(function() {
+        console.log(window.ConfigCollection);
+        var coll = window.coll = new window.ConfigCollection();
+        coll.fetch()
+        var collView = window.collView = new window.ConfigCollectionView({el: $(".collection"), collection: coll});
+        collView.render();
+      });
 
-  script(type='text/javascript' src='/js/config.js')
+    script(type='text/javascript' src='/js/config.js')
 

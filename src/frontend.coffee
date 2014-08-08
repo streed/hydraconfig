@@ -67,9 +67,8 @@ app.get '/login', (req, res) ->
 app.post '/login', app.passport.authenticate('local', {successRedirect: '/configs', failureRedirect: '/login?error=Could not Login&message=Email or Password were invalid.'})
 
 app.get '/logout', checkAuth, (req, res) ->
-  req.logout()
   app.db.AccessToken.destroy({accessToken: req.session.accessToken, session: true}).success () ->
-    req.session = null
+    req.logout()
     res.redirect '/login'
 
 app.get '/configs', checkAuth, (req, res) ->

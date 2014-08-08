@@ -7,9 +7,12 @@ block sidebar
   include sidebar
 
 block container   
-  button(type='submit' class='btn btn-default btn-success generate-key') Generate New Api Key
+  div(class='container')
+    div(class='row')
+      div(class='row col-sm-offset-2 col-md-10')
+        button(type='submit' class='btn btn-default btn-success generate-key') Generate New Api Key
 
-  div(class='keys')
+        div(class='keys')
 
 block append scripts
   include templates
