@@ -54,6 +54,8 @@ app.use app.oauth.errorHandler()
 app.use (req, res, next) ->
   if req.url.indexOf("api") >= 0
     return next()
+
+  LOG.trace req.user, req.session.accessToken
     
   if !(req.user)
     return next()
