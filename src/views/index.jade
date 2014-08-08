@@ -26,3 +26,65 @@ block container
         div(class='col-lg-offset-3 col-lg-6 text-center')
           p With our service we aim to save developers time and give them more control of their configurations.
 
+  section(class='success')
+    div(class='container')
+      div(class='row')
+        div(class='col-lg-12 text-center')
+          h2 Example
+          p(class='col-lg-4 col-lg-offset-1') The JavaScript below hits our 
+           code /api/config 
+           |  endpoint which returns all of your config objects in our system.
+          p(class='col-lg-4 col-lg-offset-2') The JSON object below is the result of the JavaScript call. It will contain all of your configurations in the system.
+
+
+      
+    div(class='row col-md-offset-1')
+      pre(class='col-md-6').
+        request = require("request");
+        
+        clientId = "3ae781a47397e6d6df64b677";
+        clientSecret = "88eb5df16899da110952d98462fef1f0d816c0d75427b599"
+        
+        data = {
+          "grant_type": "client_credentials",
+          "client_id": clientId,
+          "client_secret": clientSecret
+        };
+        
+        request.post("http://elt.li/oauth/token", {form: data}, 
+          function(err, response, body) {
+            accessToken = JSON.parse(body).access_token
+            request.get({ url: "http://elt.li/api/config", 
+              headers: { "Authorization": "Bearer " + accessToken } },
+              function( err, response, body) {
+                console.log(JSON.stringify(JSON.parse(body), null, 2));
+          });
+        })
+
+
+
+      pre(class='col-md-4').
+        [{
+            "name": "another-test",
+            "conf": [{
+                "name": "another.test.value",
+                "value": "yay another value",
+                "config": "another-test"
+              }
+            ]
+          },{
+            "name": "test",
+            "conf": [{
+                "name": "test.message",
+                "value": "hello world",
+                "config": "test"
+              },{
+                "name": "test.user",
+                "value": "reed",
+                "config": "test"
+              }
+            ]
+          }
+        ]
+
+
