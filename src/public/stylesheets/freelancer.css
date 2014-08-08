@@ -8,6 +8,7 @@ body {
     position: relative;
     overflow-x: hidden;
     top: 30px;
+    padding-bottom: 100px;
 }
 
 p {

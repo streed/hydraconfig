@@ -6,8 +6,10 @@ block navbar
 block sidebar
   include sidebar
 block container
-  div(class='error')
-  div(class='config')
+  div(class='container-fluid col-md-offset-3')
+    div(class='row col-md-10')
+      div(class='error')
+      div(class='config')
 
 block append scripts
   include templates
