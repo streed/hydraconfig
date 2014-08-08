@@ -12,10 +12,15 @@ checkAuth = (req, res, next) ->
   res.redirect "/login"
 
 app.get '/', (req, res) ->
-  res.render 'index'
+  if req.user
+    res.redirect '/configs'
+  else
+    res.render 'index'
 
 app.get '/register', (req, res) ->
-  res.render 'register'
+  res.render 'register',
+    error: req.query.error
+    message: req.query.message
 
 app.post '/register', (req, res) ->
   sha1 = crypto.createHash('sha1')
@@ -28,7 +33,7 @@ app.post '/register', (req, res) ->
       firstName: user.firstName
       lastName: user.lastName
       zkChroot: app.zoo.zkBase + chroot.toString('hex') + "/"
-    ).success (user) ->
+    ).success( (user) ->
       crypto.randomBytes 12, (ex, buf) ->
         clientId = buf.toString 'hex'
         crypto.randomBytes 24, (ex, buf2) ->
@@ -47,13 +52,19 @@ app.post '/register', (req, res) ->
                   res.redirect '/login'
                 else
                   LOG.error stat
+    ).error( (errors) ->
+      if errors.code == 'ER_DUP_ENTRY'
+        res.redirect '/register?error=Could not Register&message=Are you already registered?'
+    )
 
 app.get '/login', (req, res) ->
   if req.user
     res.redirect '/configs'
-  res.render 'login'
+  res.render 'login',
+    error: req.query.error
+    message: req.query.message
 
-app.post '/login', app.passport.authenticate('local', {successRedirect: '/configs', failureRedirect: '/login'})
+app.post '/login', app.passport.authenticate('local', {successRedirect: '/configs', failureRedirect: '/login?error=Could not Login&message=Email or Password were invalid.'})
 
 app.get '/logout', checkAuth, (req, res) ->
   req.logout()
@@ -62,16 +73,13 @@ app.get '/logout', checkAuth, (req, res) ->
     res.redirect '/login'
 
 app.get '/configs', checkAuth, (req, res) ->
-  res.render 'configs'
-
-app.get "/configs/new", checkAuth, (req, res) ->
-  res.render 'new',
+  res.render 'configs',
     error: req.query.error
     message: req.query.message
 
-app.post '/configs/new', checkAuth, (req, res) ->
+app.post '/configs', checkAuth, (req, res) ->
   if not /^[a-z0-9]+(-[a-z0-9]+)*$/ig.test req.body.configName
-    res.redirect '/configs/new?error=' + req.body.configName + '&message=Config name must follow the following format: ^[a-z0-9]+(-[a-z0-9]+)*$'
+    res.redirect '/configs?error=' + req.body.configName + '&message=Config name must follow the following format: ^[a-z0-9]+(-[a-z0-9]+)*$'
   else
     LOG.info "Checking if " + req.user.zkChroot + req.body.configName + " exists"
     app.zoo.exists req.user.zkChroot + req.body.configName, (err, stat) ->
@@ -94,12 +102,15 @@ app.post '/configs/new', checkAuth, (req, res) ->
             res.redirect '/configs/' + req.body.configName
           else
             LOG.error "Could not create the path...for some reason."
-            res.redirect '/view/new?error=' + req.body.configName + '&message=Could not create or exists already'
+            res.redirect '/configs?error=' + req.body.configName + '&message=Could not create or exists already'
 
 
 app.get '/configs/:config', checkAuth, (req, res) ->
-  res.render 'view',
-    config: req.params.config
+  if /^[a-z0-9]+(-[a-z0-9]+)*$/ig.test req.params.config
+    res.render 'view',
+      config: req.params.config
+  else
+    res.status(500).end()
 
 app.get '/access', checkAuth, (req, res) ->
   res.render 'access',

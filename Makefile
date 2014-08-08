@@ -13,8 +13,3 @@ clean:
 
 build:
 	coffee -o lib/ -c src/
-
-dist: clean init test build
-
-publish: dist
-	npm publish
