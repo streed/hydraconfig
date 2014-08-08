@@ -13,3 +13,5 @@ clean:
 
 build:
 	coffee -o lib/ -c src/
+	cp -R src/public lib/
+	cp -R src/views lib/
