@@ -5,6 +5,12 @@ html
     link(rel='stylesheet' href='/stylesheets/bootstrap.min.css')
     link(rel='stylesheet' href='/stylesheets/dashboard.css')
     link(rel='stylesheet' href='/stylesheets/freelancer.css')
+    link(rel='stylesheet' href='//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css')
+    style.
+      .logo {
+        font-size: 200px;
+      }
+
   body
     nav(class="navbar navbar-default navbar-fixed-top navbar-shrink page-scroll" role="navigation")
       div(class="container")
@@ -28,9 +34,9 @@ html
           div(class='footer-below')                                                                                        
             div(class='row')                                                                                               
               div(class="col-lg-12")                                                                                       
-                Copyright © Elt.li 2014                                                                                    
-                div(data-gittip-username="streed" data-gittip-widget="custom")                                             
-                  a(class="gittip-link") Gittip
+                span(class="glyphicon glyphicon-copyright-mark")&nbsp;
+                Elt.li 2014                                                                                    
+                a(class="success btn btn-success" href='https://gittip.com/streed')&nbsp;Gittip
 
   block scripts
     script(type='text/javascript' src='https://code.jquery.com/jquery-2.1.1.min.js')
@@ -38,7 +44,6 @@ html
     script(type='text/javascript' src='//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js')
     script(type='text/javascript' src='//cdnjs.cloudflare.com/ajax/libs/backbone.js/1.1.2/backbone-min.js')
     script(type='text/javascript' src='//cdnjs.cloudflare.com/ajax/libs/q.js/1.0.1/q.js')
-    script(type='text/javascript' src='//gttp.co/v1.js') 
     script(type='text/javascript').
       window.accessToken = "#{accessToken}";
 
