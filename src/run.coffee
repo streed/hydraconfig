@@ -5,13 +5,26 @@ zookeeper = require 'node-zookeeper-client'
 
 Q = require 'q'
 
-require './api'
+api = require('./api').api
 require './frontend'
+
+client = require('redis').createClient()
+limiter = require('express-limiter')(api, client)
+app.use limiter(
+  lookup: ['connection.remoteAddress', 'headers.x-forwarded-for']
+  total: 500
+  expire: 1000 * 60 * 60
+  whitelist: (req) ->
+    if req.session and req.session.accessToken
+      true
+    false
+)
 
 LOG = log4js.getLogger 'run'
 
 Q.all([db.load]).then ->
   app.db = db.db
+  app.use '/api', api
   server = app.listen 8080, ->
     LOG.info "Listening on: %s:%d", server.address().address, server.address().port
     LOG.info "Checking for the default zookeeper folder 'configs' exists"

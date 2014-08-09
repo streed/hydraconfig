@@ -1,12 +1,14 @@
 log4js = require 'log4js'
 app = require('./app').app
 crypto = require 'crypto'
+express = require 'express'
+api = express.Router()
 
 Q = require 'q'
 _ = require 'underscore'
 LOG = log4js.getLogger 'api'
 
-app.get '/api/config/:config', app.passport.authenticate('bearer', {session: false}), (req, res) ->
+api.get '/config/:config', app.passport.authenticate('bearer', {session: false}), (req, res) ->
   config = req.params.config
   LOG.info "Getting /configs/" + config
 
@@ -21,7 +23,7 @@ app.get '/api/config/:config', app.passport.authenticate('bearer', {session: fal
     else
       res.status 404
 
-app.put '/api/config/:config', app.passport.authenticate('bearer', {session: false}), (req, res) ->
+api.put '/config/:config', app.passport.authenticate('bearer', {session: false}), (req, res) ->
   config = req.params.config
   conf = req.body
 
@@ -52,7 +54,7 @@ app.put '/api/config/:config', app.passport.authenticate('bearer', {session: fal
         else
           res.status(500).end()
 
-app.get '/api/config', app.passport.authenticate('bearer', {session: false}), (req, res) ->
+api.get '/config', app.passport.authenticate('bearer', {session: false}), (req, res) ->
   all = []
   app.zoo.getChildren req.user.zkChroot.slice(0, -1), (err, children, stats) ->
     Q.allSettled(_.map(children, ((x) ->
@@ -72,7 +74,7 @@ app.get '/api/config', app.passport.authenticate('bearer', {session: false}), (r
       res.send all
     ).done()
 
-app.get '/api/key/:userId', app.passport.authenticate('bearer', {session: false}), (req, res) ->
+api.get '/key/:userId', app.passport.authenticate('bearer', {session: false}), (req, res) ->
   app.db.OauthClient.findAll({where: {userId: req.params.userId, type: "public"}}).complete (err, clients) ->
     if err
       res.status(500).done()
@@ -83,7 +85,7 @@ app.get '/api/key/:userId', app.passport.authenticate('bearer', {session: false}
       res.send []
     
   
-app.put '/api/key/new', app.passport.authenticate('bearer', {session: false}), (req, res) ->
+api.put '/key/new', app.passport.authenticate('bearer', {session: false}), (req, res) ->
   app.db.OauthClient.count({where: {userId: req.body.userId, type:"public"}}).success (c) ->
     if c < 1
       crypto.randomBytes 12, (ex, buf) ->
@@ -100,7 +102,7 @@ app.put '/api/key/new', app.passport.authenticate('bearer', {session: false}), (
     else
       res.send {}
 
-app.get '/api/watch/:config', app.passport.authenticate('bearer', {session: false}), (req, res) ->
+api.get '/watch/:config', app.passport.authenticate('bearer', {session: false}), (req, res) ->
   config = req.params.config
   app.zoo.exists req.user.zkChroot + config, (err, stat) ->
     if err
@@ -114,3 +116,4 @@ app.get '/api/watch/:config', app.passport.authenticate('bearer', {session: fals
         LOG.info "Placed watcher"
       )
 
+exports.api = api

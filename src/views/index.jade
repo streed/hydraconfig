@@ -29,14 +29,7 @@ block container
     div(class='container')
       div(class='row')
         div(class='col-lg-12 text-center')
-          h2 Example
-          p(class='col-lg-4 col-lg-offset-1') The JavaScript below hits our 
-           code /api/config 
-           |  endpoint which returns all of your config objects in our system.
-          p(class='col-lg-4 col-lg-offset-2') The JSON object below is the result of the JavaScript call. It will contain all of your configurations in the system.
-
-
-      
+          h2 Api
     div(class='row col-sm-offset-2')
       pre(class='col-md-6').
         request = require("request");
@@ -86,4 +79,18 @@ block container
           }
         ]
 
+  section
+    div(class="container")
+      div(class='row')
+        div(class='col-lg-12 text-center')
+          h2 Account Limits
+          hr
+          p We have, what we feel, are very accomadating account limits. We allow 
+           kbd 500
+           |  api requests per hour. Each user can make an unlimited number of configurations that fit inside of 
+           kbd 1mb
+           |  of space, we feel that this is more than enough.
+           |  If you fall into the minority of users that need higher request accounts then please feel free to get in touch and we can work something out. 
+          p Accounts will always be free, but the service may not be around forever because it is free thus we accept donations to keep the service around with the use of GitTips.
+           | If you get value from the service then please donate!
 
