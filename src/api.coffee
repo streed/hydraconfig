@@ -11,17 +11,33 @@ LOG = log4js.getLogger 'api'
 api.get '/config/:config', app.passport.authenticate('bearer', {session: false}), (req, res) ->
   config = req.params.config
   LOG.info "Getting /configs/" + config
+  config = config.split(',')
 
-  app.zoo.getData req.user.zkChroot + config, (err, data, stat) ->
-    if err
-      LOG.error err.stack
-      res.status 404
+  all = []
+  Q.allSettled(_.map(config, ((x) ->
+    deferred = Q.defer()
+    app.zoo.getData req.user.zkChroot + x,( (err, data, stat) ->
+      if err
+        LOG.error err
+        res.status(500).end()
 
-    if stat
-      data = JSON.parse data.toString('utf8')
-      res.send data
-    else
-      res.status 404
+      if stat
+        data = JSON.parse data.toString("utf8")
+        deferred.resolve(data)
+      else
+        res.status(404).end()
+    )
+    return deferred.promise
+  ))).then((results) ->
+    result = {}
+    for name in config
+      for r in results
+        r = r.value
+        if name == r.name
+          for k in r.conf
+            result[k.name] = k.value
+    res.send result
+  ).done()
 
 api.put '/config/:config', app.passport.authenticate('bearer', {session: false}), (req, res) ->
   config = req.params.config
