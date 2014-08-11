@@ -11,7 +11,7 @@ data = {
 
 request.post("http://localhost:8080/oauth/token", {form: data}, function(err, response, body) {
   accessToken = JSON.parse(body).access_token
-  request.get({ url: "http://localhost:8080/api/config/test-qa,test-prod", headers: { "Authorization": "Bearer " + accessToken } }, function( err, response, body) {
+  request.get({ url: "http://localhost:8080/api/config/test-qa,test-prod,test-special", headers: { "Authorization": "Bearer " + accessToken } }, function( err, response, body) {
     console.log(JSON.stringify(JSON.parse(body), null, 2));
   });
 })

@@ -8,6 +8,13 @@ Q = require 'q'
 _ = require 'underscore'
 LOG = log4js.getLogger 'api'
 
+# This endpoint takes a comma seperated list and composes a complete configuration from this list
+# in a left to right ordering.
+#
+#  @example CURL to get qa and prod mixed config 
+#   curl /api/config/qa,prod -H "Authorization: Bearer ..."
+#
+# @param config comma seperated list of configuration names.
 api.get '/config/:config', app.passport.authenticate('bearer', {session: false}), (req, res) ->
   config = req.params.config
   LOG.info "Getting /configs/" + config
@@ -39,6 +46,12 @@ api.get '/config/:config', app.passport.authenticate('bearer', {session: false})
     res.send result
   ).done()
 
+# Updates the specified configuration's key/value parings. If a key exists already then it's value
+# is overwritten by the new value. If the config does not exist then one is created.
+#
+# @param config string The name of a configuration file in the database.
+# @param body json The json list that contains name/value tuples. The names of the tuples must be
+#   matched by the following regex: /[a-z0-9]+(\.[a-z0-9]+)*/i
 api.put '/config/:config', app.passport.authenticate('bearer', {session: false}), (req, res) ->
   config = req.params.config
   conf = req.body
@@ -70,6 +83,7 @@ api.put '/config/:config', app.passport.authenticate('bearer', {session: false})
         else
           res.status(500).end()
 
+# Retruns a JSON list that contains all of the configurations that the user owns.
 api.get '/config', app.passport.authenticate('bearer', {session: false}), (req, res) ->
   all = []
   app.zoo.getChildren req.user.zkChroot.slice(0, -1), (err, children, stats) ->
@@ -90,6 +104,30 @@ api.get '/config', app.passport.authenticate('bearer', {session: false}), (req, 
       res.send all
     ).done()
 
+# This places a watch on the specified config. What this means is that a Long Polling connection is created,
+# please make sure the client supports long-polling, and if a value is changed in the config then the client
+# will be notified immediately and the new configuration data will be returned to the connecting client.
+#
+# @note Long-Polling was choosen to ease in the creation of new clients of this API.
+#
+# @param config string The name of a config.
+api.get '/watch/:config', app.passport.authenticate('bearer', {session: false}), (req, res) ->
+  config = req.params.config
+  app.zoo.exists req.user.zkChroot + config, (err, stat) ->
+    if err
+      LOG.error err
+
+    if stat
+      app.zoo.getData req.user.zkChroot + config, ((event) ->
+        app.zoo.getData req.user.zkChroot + config, (err, data, stat) ->
+          res.send data
+      ),((err, data, stat) ->
+        LOG.info "Placed watcher"
+      )
+
+# Internal API that is used to return the current public API key for the currently registered user.
+# 
+# @param userId integer The integer for the registered user.
 api.get '/key/:userId', app.passport.authenticate('bearer', {session: false}), (req, res) ->
   app.db.OauthClient.findAll({where: {userId: req.params.userId, type: "public"}}).complete (err, clients) ->
     if err
@@ -100,7 +138,7 @@ api.get '/key/:userId', app.passport.authenticate('bearer', {session: false}), (
     else
       res.send []
     
-  
+# Internal API that is used to create the users public API key.
 api.put '/key/new', app.passport.authenticate('bearer', {session: false}), (req, res) ->
   app.db.OauthClient.count({where: {userId: req.body.userId, type:"public"}}).success (c) ->
     if c < 1
@@ -117,19 +155,5 @@ api.put '/key/new', app.passport.authenticate('bearer', {session: false}), (req,
               res.send oauthClient
     else
       res.send {}
-
-api.get '/watch/:config', app.passport.authenticate('bearer', {session: false}), (req, res) ->
-  config = req.params.config
-  app.zoo.exists req.user.zkChroot + config, (err, stat) ->
-    if err
-      LOG.error err
-
-    if stat
-      app.zoo.getData req.user.zkChroot + config, ((event) ->
-        app.zoo.getData req.user.zkChroot + config, (err, data, stat) ->
-          res.send data
-      ),((err, data, stat) ->
-        LOG.info "Placed watcher"
-      )
 
 exports.api = api

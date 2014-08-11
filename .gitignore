@@ -29,3 +29,5 @@ node_modules
 *.swn
 
 lib/
+doc/
+.codoopts
