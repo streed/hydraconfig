@@ -44,7 +44,7 @@ app.post '/register', (req, res) ->
             type: "internal"
           }).success (oauthClient) ->
             oauthClient.setUser(user).success (client) ->
-              app.zoo.create user.zkChroot.slice(0, -1), (err, stat) ->
+              app.zoo.create user.zkChroot.slice(0, -1), new Buffer(JSON.stringify({"total": 0, "configs": {}})), (err, stat) ->
                 if err
                   LOG.error err
 

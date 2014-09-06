@@ -15,6 +15,7 @@ block append scripts
   include templates
   script(type='text/javascript').
     $(function() {
+      //#{config}
       var config = window.config = new window.ConfigModel({name: "#{config}"})
 
       config.fetch({success: function() {

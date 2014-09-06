@@ -29,6 +29,28 @@ User = db.define("User",
       len: 64
     }
   }
+  active: {
+    type: Sequelize.BOOLEAN
+    defaultValue: false
+  }
+)
+
+Role = db.define("Role",
+  name: {
+    type: Sequelize.STRING
+    unique: true
+  }
+  description: Sequelize.STRING
+)
+
+UserPlan = db.define("UserPlan",
+  start: Sequelize.DATE
+  end: Sequelize.DATE
+)
+
+Plan = db.define("Plan",
+  name: Sequelize.STRING
+  price: Sequelize.DECIMAL
 )
 
 Config = db.define("Config",
@@ -79,8 +101,17 @@ RefreshToken = db.define("RefreshToken",
   expires: Sequelize.DATE
 )
 
+User.hasMany Role
+Role.belongsTo User
+
 User.hasMany Config
 Config.belongsTo User
+
+User.hasOne UserPlan
+UserPlan.belongsTo User
+
+UserPlan.hasOne Plan
+Plan.belongsTo UserPlan
 
 User.hasMany AccessToken
 AccessToken.belongsTo User

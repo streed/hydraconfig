@@ -3,13 +3,13 @@ Client = require('../client/client').Client
 builder = Client.Builder()
 
 c = null
-builder.setClientId("8a1143fe5910ed00ec1489ce")
-  .setClientSecret("c12516026334fb8dd0890090bfe2d25392e2ce2f7a8f177f")
+builder.setClientId("4b06ff139b684d3a29851ef8")
+  .setClientSecret("308746aa04248e3ae839052cd2c9be190652bc24ddcab5d4")
   .setApiUri("http://localhost:8080/")
   .build().then( (cc) ->
     cc.configs().then((configs) ->
       console.log configs
-      cc.config("test-qa", "test-prod").then( (config) ->
+      cc.config("test", "test-overrides").then( (config) ->
         console.log config
       )
     )

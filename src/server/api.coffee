@@ -8,6 +8,32 @@ Q = require 'q'
 _ = require 'underscore'
 LOG = log4js.getLogger 'api'
 
+trackAndLimitUsage = (user, config, length) ->
+  deferred = Q.defer()
+  app.zoo.getData user.zkChroot.slice(0, -1), ( err, data, stat) ->
+    if err
+      LOG.error err
+      res.status(500).end()
+
+    if stat
+      data = JSON.parse data.toString('utf8')
+      LOG.info data
+      if not data.total
+        data.total = 0
+      data.configs[config] = length
+      LOG.info _.values(data.configs)
+      data.total = _.reduce _.values(data.configs), ((total, val) -> return total + val), 0
+
+      #Limit size here
+    
+      app.zoo.setData user.zkChroot.slice(0, -1), new Buffer(JSON.stringify(data)), (err, stat) ->
+        if err
+          LOG.error err
+          res.status(500).end()
+        deferred.resolve()
+
+  return deferred.promise
+
 # This endpoint takes a comma seperated list and composes a complete configuration from this list
 # in a left to right ordering.
 #
@@ -23,7 +49,7 @@ api.get '/config/:config', app.passport.authenticate('bearer', {session: false})
   all = []
   Q.allSettled(_.map(config, ((x) ->
     deferred = Q.defer()
-    app.zoo.getData req.user.zkChroot + x,( (err, data, stat) ->
+    app.zoo.getData req.user.zkChroot + x.toLowerCase(),( (err, data, stat) ->
       if err
         LOG.error err
         res.status(500).end()
@@ -36,14 +62,22 @@ api.get '/config/:config', app.passport.authenticate('bearer', {session: false})
     )
     return deferred.promise
   ))).then((results) ->
-    result = {}
+    values = {}
     for name in config
       for r in results
         r = r.value
         if name == r.name
           for k in r.conf
-            result[k.name] = k.value
-    res.send result
+            values[k.name] = k
+    conf = []
+    for k, v of values
+      conf.push(_.extend({name: k}, v))
+    name = config[config.length - 1]
+    res.send {
+      name: name
+      conf: conf
+    }
+
   ).done()
 
 # Updates the specified configuration's key/value parings. If a key exists already then it's value
@@ -53,37 +87,40 @@ api.get '/config/:config', app.passport.authenticate('bearer', {session: false})
 # @param body json The json list that contains name/value tuples. The names of the tuples must be
 #   matched by the following regex: /[a-z0-9]+(\.[a-z0-9]+)*/i
 api.put '/config/:config', app.passport.authenticate('bearer', {session: false}), (req, res) ->
-  config = req.params.config
+  config = req.params.config.toLowerCase()
   conf = req.body
-
+  
   for d in conf
     if !/[a-z0-9]+(\.[a-z0-9]+)*/i.test d.name
       res.status(500).end()
       return
-  app.zoo.exists req.user.zkChroot.slice(0, -1), (err, stat) ->
-    if err
-      LOG.error err
+  trackAndLimitUsage(req.user, config, conf.length).then(->
+    LOG.info "Yay still under allowances"
+    app.zoo.exists req.user.zkChroot + config, (err, stat) ->
+      if err
+        LOG.error err
 
-    if stat
-      app.zoo.setData req.user.zkChroot + config, new Buffer(JSON.stringify(req.body)), (err, stat) ->
-        if err
-          LOG.error err
+      if stat
+        app.zoo.setData req.user.zkChroot + config, new Buffer(JSON.stringify(req.body)), (err, stat) ->
+          if err
+            LOG.error err
 
-        if stat
-          res.status(200).end()
-        else
-          res.status(500).end()
-    else
-      app.zoo.create req.user.zkChroot + config, new Buffer(JSON.stringify(res.body)), (err, stat) ->
-        if err
-          LOG.error err
+          if stat
+            res.status(200).end()
+          else
+            res.status(500).end()
+      else
+        app.zoo.create req.user.zkChroot + config, new Buffer(JSON.stringify(res.body)), (err, stat) ->
+          if err
+            LOG.error err
 
-        if stat
-          res.status(200).end()
-        else
-          res.status(500).end()
+          if stat
+            res.status(200).end()
+          else
+            res.status(500).end()
+  )
 
-# Retruns a JSON list that contains all of the configurations that the user owns.
+# Returns a JSON list that contains all of the configurations that the user owns.
 api.get '/config', app.passport.authenticate('bearer', {session: false}), (req, res) ->
   all = []
   app.zoo.getChildren req.user.zkChroot.slice(0, -1), (err, children, stats) ->

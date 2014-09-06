@@ -38,7 +38,8 @@ window.ConfigModelView = Backbone.View.extend({
     });
     var config = this.model.id;
     var valueView = new window.ConfigModelValuesView({values: this.model.get("conf"), config: config});
-    var values = valueView.render()
+    var values = valueView.render();
+    console.log(values);
     var data = { "config": config, "values": values};
     var html = this.template(data);
     $(this.el).html(html);
@@ -102,10 +103,8 @@ window.ConfigCollectionModelView = Backbone.View.extend({
     $("button[data-config='" + this.model.id + "']").click(function(e) {
       e.preventDefault();
       self.model.set({conf: _.reject(self.model.get("conf"), function(x) {
-        console.log(x);
         return x.name == $(e.currentTarget).data("name");
       })});
-      console.log(self.model.get("conf"));
       self.model.save();
     });
   }
