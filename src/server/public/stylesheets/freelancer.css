@@ -7,7 +7,7 @@
 body {
     position: relative;
     overflow-x: hidden;
-    top: 30px;
+    top: 15px;
     padding-bottom: 70px;
 }
 
@@ -89,7 +89,7 @@ header {
 }
 
 header .container {
-    padding-top: 100px;
+    padding-top: 75px;
     padding-bottom: 50px;
 }
 
@@ -113,7 +113,7 @@ header .intro-text .skills {
 
 @media(min-width:768px) {
     header .container {
-        padding-top: 200px;
+        padding-top: 75px;
         padding-bottom: 100px;
     }
 
@@ -127,13 +127,6 @@ header .intro-text .skills {
 }
 
 @media(min-width:768px) {
-    .navbar-fixed-top {
-        padding: 25px 0;
-        -webkit-transition: padding .3s;
-        -moz-transition: padding .3s;
-        transition: padding .3s;
-    }
-
     .navbar-fixed-top .navbar-brand {
         font-size: 2em;
         -webkit-transition: all .3s;
@@ -142,7 +135,6 @@ header .intro-text .skills {
     }
 
     .navbar-fixed-top.navbar-shrink {
-        padding: 10px 0;
     }
 
     .navbar-fixed-top.navbar-shrink .navbar-brand {
@@ -151,7 +143,6 @@ header .intro-text .skills {
 }
 
 .navbar {
-    text-transform: uppercase;
     font-family: Montserrat,"Helvetica Neue",Helvetica,Arial,sans-serif;
     font-weight: 700;
 }

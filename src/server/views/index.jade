@@ -2,36 +2,39 @@ extend layout
 
 block container
   header
-    div(class='container')
-      div(class='row')
-        div(class='col-lg-12')
-          span(class="logo glyphicon glyphicon-barcode")
-          div(class='intro-text')
-            span(class='name') Hassle Free Configs
+    div.container
+      div.row
+        div.col-lg-12
+          span.logo.glyphicon.glyphicon-barcode
+          div.intro-text
+            span.name Hassle Free Configs
             hr
-            span(class='skills') Simple, Reliable, Free
-  section(id='about')
-    div(class='container')
-      div(class='row')
-        div(class='col-lg-12 text-center')
-          h2 About
+            span.skills Simple, Reliable, Powerful
+  section(id='purpose')
+    div.container
+      div.row
+        div.col-lg-12.text-center
+          h2 Purpose
           hr
-        div(class='col-lg-3 col-lg-offset-2')
-          p Setting up and using multiple different configurations should be simple. There should never be a need to maintain configuration files on servers or developer machines. 
-           | We've streamlined this process by giving developers the ability to setup their configs in our service and then retrieve these configs from any client that has access to the internet.
-        div(class='col-lg-3')
-          p With our apis you can compose configs to give yourself overrides, for example production overriding api locations. Along with configuration composition we can give clients real-time
-           | configuration updates through the use of long-polling, this way all of your services are update to date with the latest configuration settings without having to restart each service.
-        div(class='col-lg-3')
-          p With our service we aim to save developers time and give them more control of their configurations.
+        div.col-lg-8.col-sm-offset-4
+          dl
+            dt Simple
+            dd Create and compose configurations with a simple dashboard and API.
 
-  section(class='success')
-    div(class='container')
-      div(class='row')
-        div(class='col-lg-12 text-center')
+            dt Reliable
+            dd Your configurations available in many langauges and on almost any device.
+
+            dt Powerful
+            dd Allow your applications to receive configuration changes as they occur in real time.
+
+  section.success
+    div.container
+      div.row
+        div.col-lg-12.text-center
           h2 Api
-    div(class='row col-sm-offset-2')
-      pre(class='col-md-6').
+
+    div.row.col-md-offset-1
+      pre.col-md-10.
         request = require("request");
         
         clientId = "3ae781a47397e6d6df64b677";
@@ -44,18 +47,15 @@ block container
         };
         
         request.post("http://elt.li/oauth/token", {form: data}, 
-          function(err, response, body) {
-            accessToken = JSON.parse(body).access_token
-            request.get({ url: "http://elt.li/api/config", 
-              headers: { "Authorization": "Bearer " + accessToken } },
+          function(err, response, body) {accessToken = JSON.parse(body).access_token
+              request.get({ url: "https://hydraconfig.com/api/config", headers: { "Authorization": "Bearer " + accessToken } },
               function( err, response, body) {
                 console.log(JSON.stringify(JSON.parse(body), null, 2));
           });
         })
 
-
-
-      pre(class='col-md-3').
+    div.row.col-md-offset-1
+      pre.col-md-10.
         [{
             "name": "another-test",
             "conf": [{
@@ -79,18 +79,55 @@ block container
           }
         ]
 
-  section
-    div(class="container")
-      div(class='row')
-        div(class='col-lg-12 text-center')
-          h2 Account Limits
-          hr
-          p We have, what we feel, are very accomadating account limits. We allow 
-           kbd 500
-           |  api requests per hour. Each user can make an unlimited number of configurations that fit inside of 
-           kbd 1mb
-           |  of space, we feel that this is more than enough.
-           |  If you fall into the minority of users that need higher request accounts then please feel free to get in touch and we can work something out. 
-          p Accounts will always be free, but the service may not be around forever because it is free thus we accept donations to keep the service around with the use of GitTips.
-           | If you get value from the service then please donate!
+    div.container
+      div.row
+        div.col-lg-12.text-center
+          h3 Available Libraries
+          img(src='/img/nodejs-black.png')
+  section(id='plans')
+    div.container
+      div.row
+        div.col-lg-12.text-center
+          h2 Plans
+    div.container
+      div.row
+        div.col-lg-4
+          div.panel.panel-danger
+            div.panel-heading.text-center
+              h3 Personal
+            div.panel-body
+              p.lead.text-center(style="font-size: 40px") $2/month
+            ul.list-group.list-group-flush.text-center
+              li.list-group-item Internal Deployment
+              li.list-group-item 10 requests/hour
+              li.list-group-item 512Kb of Space
+              li.list-group-item Single User
+            div.panel-footer
+              a.btn.btn-block.btn-default Sign up
+        div.col-lg-4.col-offset-4
+          div.panel.panel-info
+            div.panel-heading.text-center
+              h3 Professional
+            div.panel-body
+              p.lead.text-center(style="font-size: 40px") $10/month
+            ul.list-group.list-group-flush.text-center
+              li.list-group-item Internal Deployment
+              li.list-group-item 50 requests/hour
+              li.list-group-item 1MB of Space
+              li.list-group-item Admin and Developers
+            div.panel-footer
+              a.btn.btn-block.btn-default Sign up
+        div.col-lg-4.col-offset-4
+          div.panel.panel-success
+            div.panel-heading.text-center
+              h3 Public
+            div.panel-body
+              p.lead.text-center(style="font-size: 40px") $20/month
+            ul.list-group.list-group-flush.text-center
+              li.list-group-item Public Deployment
+              li.list-group-item 5 requests/hour/user
+              li.list-group-item 1MB of Space
+              li.list-group-item Admin and Developers
+            div.panel-footer
+              a.btn.btn-block.btn-default Sign up
 
