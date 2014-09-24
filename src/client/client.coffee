@@ -9,7 +9,7 @@ class Client
     constructor: () ->
       @_clientId = ""
       @_clientSecret = ""
-      @_apiUri = "https://elt.li/"
+      @_apiUri = "https:/hydraconfig.com/"
 
     setClientId: (@_clientId) ->
       @

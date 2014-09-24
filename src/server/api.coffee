@@ -10,7 +10,8 @@ LOG = log4js.getLogger 'api'
 
 trackAndLimitUsage = (user, config, length) ->
   deferred = Q.defer()
-  app.zoo.getData user.zkChroot.slice(0, -1), ( err, data, stat) ->
+  userDir = user.zkChroot.slice(0, -1)
+  app.zoo.getData userDir, ( err, data, stat) ->
     if err
       LOG.error err
       res.status(500).end()
@@ -21,12 +22,12 @@ trackAndLimitUsage = (user, config, length) ->
       if not data.total
         data.total = 0
       data.configs[config] = length
-      LOG.info _.values(data.configs)
+      LOG.info config, length, data
       data.total = _.reduce _.values(data.configs), ((total, val) -> return total + val), 0
 
       #Limit size here
     
-      app.zoo.setData user.zkChroot.slice(0, -1), new Buffer(JSON.stringify(data)), (err, stat) ->
+      app.zoo.setData userDir, new Buffer(JSON.stringify(data)), (err, stat) ->
         if err
           LOG.error err
           res.status(500).end()
@@ -89,19 +90,20 @@ api.get '/config/:config', app.passport.authenticate('bearer', {session: false})
 api.put '/config/:config', app.passport.authenticate('bearer', {session: false}), (req, res) ->
   config = req.params.config.toLowerCase()
   conf = req.body
+  stringifyConf = JSON.stringify(conf)
   
   for d in conf
     if !/[a-z0-9]+(\.[a-z0-9]+)*/i.test d.name
       res.status(500).end()
       return
-  trackAndLimitUsage(req.user, config, conf.length).then(->
+  trackAndLimitUsage(req.user, config, stringifyConf.length).then(->
     LOG.info "Yay still under allowances"
     app.zoo.exists req.user.zkChroot + config, (err, stat) ->
       if err
         LOG.error err
 
       if stat
-        app.zoo.setData req.user.zkChroot + config, new Buffer(JSON.stringify(req.body)), (err, stat) ->
+        app.zoo.setData req.user.zkChroot + config, new Buffer(stringifyConf), (err, stat) ->
           if err
             LOG.error err
 

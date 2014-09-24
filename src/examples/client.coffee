@@ -3,13 +3,13 @@ Client = require('../client/client').Client
 builder = Client.Builder()
 
 c = null
-builder.setClientId("4b06ff139b684d3a29851ef8")
-  .setClientSecret("308746aa04248e3ae839052cd2c9be190652bc24ddcab5d4")
-  .setApiUri("http://localhost:8080/")
+builder.setClientId("9cfa8712468e948b6a95d7a2")
+  .setClientSecret("990c37aec11cb6acf244073c036873d0bfccd5607b061ac1")
+  .setApiUri("http://hydraconfig.com/")
   .build().then( (cc) ->
     cc.configs().then((configs) ->
       console.log configs
-      cc.config("test", "test-overrides").then( (config) ->
+      cc.config("prod").then( (config) ->
         console.log config
       )
     )

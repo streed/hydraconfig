@@ -7,6 +7,10 @@ body {
   padding-top: 50px;
 }
 
+.section-bg-dark {
+  background-color: #3F5973;
+}
+
 
 /*
  * Global add-ons
